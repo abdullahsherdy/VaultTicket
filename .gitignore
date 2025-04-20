@@ -14,12 +14,12 @@ secrets.json
 *.db
 
 # Frontend (React, Angular, etc.)
-node_modules/
-dist/
-build/
-.env
-.vite/
-.angular/
+# node_modules/
+# dist/
+# build/
+# .env
+# .vite/
+# .angular/
 
 # Logs / Misc
 *.log
