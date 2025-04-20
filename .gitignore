@@ -1,7 +1,7 @@
 # .NET / Visual Studio
 .vs/
-bin/
 obj/
+bin/
 *.user
 *.suo
 *.userosscache
@@ -12,14 +12,6 @@ appsettings.Development.json
 secrets.json
 *.pfx
 *.db
-
-# Frontend (React, Angular, etc.)
-# node_modules/
-# dist/
-# build/
-# .env
-# .vite/
-# .angular/
 
 # Logs / Misc
 *.log
