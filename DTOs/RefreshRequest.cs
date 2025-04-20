@@ -1,10 +1,11 @@
 ﻿namespace API.DTOs
 {
-    public class RegisterRequest
+    public class RefreshRequest
     {
         public string Username { get; set; }
-        public string Password { get; set; }
-        public string Role { get; set; } = "User"; // default role
+
+        public string Token { get; set; }
+        public string RefreshToken { get; set; }
     }
 
 }
