@@ -3,11 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using API.Models;
 using API.Data;
 
-[ApiController]
 [Route("api/[controller]")]
+[ApiController]
 public class BookingController : ControllerBase
 {
     private readonly AppDbContext _context;
@@ -17,7 +16,11 @@ public class BookingController : ControllerBase
         _context = context;
     }
 
-    // 🔒 Book an event
+
+    [HttpGet("test")]
+    public IActionResult Test() => Ok("Routing works!");
+
+    // Book an event
     [Authorize]
     [HttpPost("{eventId}")]
     public async Task<IActionResult> BookEvent(int eventId)
@@ -56,7 +59,7 @@ public class BookingController : ControllerBase
         return Ok("Booking cancelled.");
     }
 
-    // 🔒 User: Get own bookings
+    // User: Get own bookings
     [Authorize]
     [HttpGet("my")]
     public async Task<IActionResult> GetMyBookings()
@@ -81,4 +84,35 @@ public class BookingController : ControllerBase
 
         return Ok(bookings);
     }
+
+    //Admin: Update booking time or event
+    [Authorize(Roles = "Admin")]
+    [HttpPut("{bookingId}")]
+    public async Task<IActionResult> UpdateBooking(int bookingId, [FromBody] Booking updated)
+    {
+        var booking = await _context.Bookings.FindAsync(bookingId);
+        if (booking == null)
+            return NotFound("Booking not found.");
+
+        booking.EventId = updated.EventId;
+        booking.CreatedAt = updated.CreatedAt;
+
+        await _context.SaveChangesAsync();
+        return Ok("Booking updated.");
+    }
+
+    //  Admin: Delete any booking
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("admin-delete/{id}")]
+    public async Task<IActionResult> DeleteByAdmin(int id)
+    {
+        var booking = await _context.Bookings.FindAsync(id);
+        if (booking == null)
+            return NotFound("Booking not found.");
+
+        _context.Bookings.Remove(booking);
+        await _context.SaveChangesAsync();
+        return Ok("Booking deleted by Admin.");
+    }
+
 }

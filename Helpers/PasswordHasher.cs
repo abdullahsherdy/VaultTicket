@@ -2,7 +2,7 @@
 
 namespace API.Helpers
 {
-    public static class PasswordHasher
+    public class PasswordHasher
     {
 
 
@@ -12,7 +12,7 @@ namespace API.Helpers
         /// </summary>
         /// <param name="password">Plain-Text Password Provided by the user</param>
         /// <returns></returns>
-        public static string HashPassword(string password)
+        public string HashPassword(string password)
         {
             return BCrypt.Net.BCrypt.HashPassword(password);
         }
@@ -26,7 +26,7 @@ namespace API.Helpers
         /// <param name="password">Plain-Text Password provided by the user</param>
         /// <param name="hashedPassword">The hashed password stored in the system.</param>
         /// <returns></returns>
-        public static bool VerifyPassword(string password, string hashedPassword)
+        public bool VerifyPassword(string password, string hashedPassword)
         {
             return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
         }

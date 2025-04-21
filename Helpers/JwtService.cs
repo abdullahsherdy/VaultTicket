@@ -22,18 +22,44 @@ namespace API.Helpers
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), 
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Role, user.Role)
             };
 
+            /// token will be  in this form 
+            /*
+             {
+                id : 
+                name :
+                role : // the use of role is in Auth
+              }
+             */
+            
+            /// this only to avoid exception to be Throwen 
+            int expireMinutes;
+            if (int.TryParse(_config["Jwt:ExpireMinutes"], out expireMinutes))
+            {
+
+                var Token = new JwtSecurityToken(
+                    issuer: _config["Jwt:Issuer"],
+                    audience: _config["Jwt:Audience"],
+                    claims: claims,
+                    expires: DateTime.UtcNow.AddMinutes(expireMinutes),
+                    signingCredentials: creds
+                );
+
+                return new JwtSecurityTokenHandler().WriteToken(Token);
+            }
+
+            /// Incase number of minutes not supplied
             var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(30),
-                signingCredentials: creds
-            );
+                   issuer: _config["Jwt:Issuer"],
+                   audience: _config["Jwt:Audience"],
+                   claims: claims,
+                   expires: DateTime.UtcNow.AddMinutes(60),
+                   signingCredentials: creds
+               );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }

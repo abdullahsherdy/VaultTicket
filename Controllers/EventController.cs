@@ -16,7 +16,7 @@ public class EventsController : ControllerBase
         _context = context;
     }
 
-    // ✅ Public: Get All Events
+    //  Public: Get All Events
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -24,7 +24,7 @@ public class EventsController : ControllerBase
         return Ok(events);
     }
 
-    // ✅ Public: Get Event by ID
+    //  Public: Get Event by ID
     [HttpGet("{id}")]
     public async Task<IActionResult> Get(int id)
     {

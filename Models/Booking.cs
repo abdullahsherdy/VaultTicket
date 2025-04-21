@@ -1,5 +1,7 @@
 ﻿// Models/Booking.cs
 
+using System.Text.Json.Serialization;
+
 namespace API.Models;
 public class Booking
 {
@@ -9,5 +11,6 @@ public class Booking
     public int UserId { get; set; }
     public User User { get; set; }
     public int EventId { get; set; }
+    [JsonIgnore]
     public Event Event { get; set; }
 }

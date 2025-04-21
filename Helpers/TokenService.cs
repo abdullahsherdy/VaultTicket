@@ -1,14 +1,19 @@
-﻿using System.Security.Cryptography;
-
-namespace API.Helpers
+﻿namespace API.Helpers
 {
-    public static class TokenService
+    public class TokenService
     {
-        public static string GenerateRefreshToken()
+        private readonly IRandomNumberGeneratorService _randomNumberGeneratorService;
+
+        // Constructor Injection
+        public TokenService(IRandomNumberGeneratorService randomNumberGeneratorService)
         {
-            var randomBytes = new byte[64];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomBytes);
+            _randomNumberGeneratorService = randomNumberGeneratorService;
+        }
+
+        // Instance method to generate the refresh token
+        public string GenerateRefreshToken()
+        {
+            var randomBytes = _randomNumberGeneratorService.GenerateBytes(64);
             return Convert.ToBase64String(randomBytes);
         }
     }

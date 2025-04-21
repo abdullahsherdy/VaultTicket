@@ -9,7 +9,7 @@ namespace API.Helpers
 
         public AesEncryptionService(IConfiguration config)
         {
-            _key = config["Encryption:Key"] ?? throw new ArgumentNullException("Encryption key is missing.");
+            _key = config["AES:Key"] ?? throw new ArgumentNullException("Encryption key is missing.");
         }
 
         public string Encrypt(string plainText)

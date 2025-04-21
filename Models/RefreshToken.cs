@@ -1,6 +1,7 @@
 ﻿// Models/RefreshToken.cs
 using API.Models;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 public class RefreshToken
 {
@@ -14,5 +15,6 @@ public class RefreshToken
     public bool IsActive => Revoked == null && !IsExpired;
     // Navigation
     public int UserId { get; set; }
+    [JsonIgnore]
     public User User { get; set; }
 }

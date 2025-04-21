@@ -1,6 +1,7 @@
 ﻿// Models/Event.cs
 namespace API.Models;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 public class Event
 {
@@ -15,5 +16,6 @@ public class Event
 
     public int AvailableSeats { get; set; }
 
+    [JsonIgnore]
     public List<Booking> Bookings { get; set; }
 }
