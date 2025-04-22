@@ -1,10 +1,8 @@
 ﻿using API.DTOs;
 using API.Helpers;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-/// Avoid using AllowAnonymous tag, because it will allow all users to access the endpoint Authenticated and nonAuthenticated
 namespace API.Controllers
 {
     [ApiController]
@@ -19,6 +17,12 @@ namespace API.Controllers
             _ticketService = ticketService;
         }
 
+        /// <summary>
+        ///  Currently, the ticket creation is done through the booking process.
+        ///  but, i keep it for future usage..maybe.
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> Create([FromBody] TicketCreateDto dto)
@@ -28,19 +32,29 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]    
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAll()
         {
             return Ok(await _ticketService.GetAllTicketsAsync());
         }
 
         [HttpGet("{id}")]
-        [Authorize] 
-        public async Task<IActionResult> GetById(Guid id)
+        [Authorize]
+        public async Task<IActionResult> GetById(int id)
         {
             var ticket = await _ticketService.GetTicketByIdAsync(id);
             if (ticket == null) return NotFound();
             return Ok(ticket);
+        }
+
+        [HttpGet("{id}/qr")]
+        [Authorize]
+        public async Task<IActionResult> GetQrImage(int id)
+        {
+            var ticket = await _ticketService.GetTicketByIdAsync(id);
+            if (ticket == null) return NotFound();
+
+            return Ok(new { qrImage = ticket.QrCode });
         }
 
         [HttpPost("validate")]
@@ -53,7 +67,7 @@ namespace API.Controllers
 
         [HttpPatch("{id}/status")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateStatus(Guid id, [FromQuery] string status)
+        public async Task<IActionResult> UpdateStatus(int id, [FromBody] string status)
         {
             var success = await _ticketService.UpdateTicketStatusAsync(id, status);
             return success ? Ok() : NotFound();
