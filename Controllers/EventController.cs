@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using API.Models;
 using API.Data;
 
+// difference between authentication and authorization 
+// authentication: who you are -> logged in 
+// authorization: what you can do -> Roles 
 [ApiController]
 [Route("api/[controller]")]
 public class EventsController : ControllerBase
@@ -35,7 +37,7 @@ public class EventsController : ControllerBase
         return Ok(ev);
     }
 
-    // 🔒 Admin: Create Event
+    // Admin: Create Event
     [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<IActionResult> Create(Event ev)
@@ -45,23 +47,25 @@ public class EventsController : ControllerBase
         return Ok(ev);
     }
 
-    // 🔒 Admin: Update Event
+    // Admin: Update Event
     [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, Event updated)
+    public async Task<IActionResult> Update(int id, string title ,int AvailableSeats)
     {
         var ev = await _context.Events.FindAsync(id);
         if (ev == null) return NotFound("Event not found.");
 
-        ev.Title = updated.Title;
-        ev.Date = updated.Date;
-        ev.Description = updated.Description;
+        ev.Title = title;
+        ev.AvailableSeats = AvailableSeats;
+        /// In Business there's no need to update date, and Description 
+        //ev.Date = .Date;
+        //ev.Description = updated.Description;
 
         await _context.SaveChangesAsync();
         return Ok(ev);
     }
 
-    // 🔒 Admin: Delete Event
+    // Admin: Delete Event
     [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)

@@ -1,6 +1,7 @@
 ﻿using API.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Net.Sockets;
 using System.Reflection.Emit;
 
 namespace API.Data
@@ -14,6 +15,8 @@ namespace API.Data
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<Booking> Bookings { get; set; }
+        public DbSet<Ticket> Tickets { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

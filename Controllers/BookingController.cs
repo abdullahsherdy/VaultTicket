@@ -4,31 +4,35 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using API.Data;
+using API.Helpers;
+using API.DTOs;
 
 [Route("api/[controller]")]
 [ApiController]
 public class BookingController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly ITicketService _ticketService;
 
-    public BookingController(AppDbContext context)
+    public BookingController(AppDbContext context, ITicketService ticketService)
     {
         _context = context;
+        _ticketService = ticketService;
     }
-
-
-    [HttpGet("test")]
-    public IActionResult Test() => Ok("Routing works!");
 
     // Book an event
     [Authorize]
     [HttpPost("{eventId}")]
     public async Task<IActionResult> BookEvent(int eventId)
     {
-        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         if (await _context.Bookings.AnyAsync(b => b.EventId == eventId && b.UserId == userId))
             return BadRequest("You already booked this event.");
+
+        var evnt = await _context.Events.FirstOrDefaultAsync(e => e.Id == eventId);
+        if (evnt == null || evnt.AvailableSeats <= 0 || evnt.Date.Date < DateTime.UtcNow.Date)
+            return BadRequest("Can't place your transaction.");
 
         var booking = new Booking
         {
@@ -40,15 +44,24 @@ public class BookingController : ControllerBase
         _context.Bookings.Add(booking);
         await _context.SaveChangesAsync();
 
-        return Ok("Booking successful.");
-    }
+        // Generate ticket
+        var ticketDto = await _ticketService.CreateTicketAsync(new TicketCreateDto { BookingId = booking.Id });
 
+        var result = new
+        {
+            Message = "Booking successful.",
+            BookingId = booking.Id,
+            Ticket = ticketDto
+        };
+
+        return Ok(result);
+    }
 
     [Authorize]
     [HttpDelete("{bookingId}")]
     public async Task<IActionResult> Cancel(int bookingId)
     {
-        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var booking = await _context.Bookings.FindAsync(bookingId);
 
         if (booking == null || booking.UserId != userId)
@@ -56,21 +69,33 @@ public class BookingController : ControllerBase
 
         _context.Bookings.Remove(booking);
         await _context.SaveChangesAsync();
+
         return Ok("Booking cancelled.");
     }
 
-    // User: Get own bookings
     [Authorize]
     [HttpGet("my")]
     public async Task<IActionResult> GetMyBookings()
     {
-        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-        var bookings = await _context.Bookings
-                        .Include(b => b.Event)
-                        .Where(b => b.UserId == userId)
-                        .ToListAsync();
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdString == null)
+            return BadRequest("User not found.");
 
-        return Ok(bookings);
+        var userId = int.Parse(userIdString);
+
+        var bookings = await _context.Bookings
+            .Include(b => b.Event)
+            .Where(b => b.UserId == userId)
+            .ToListAsync();
+
+        var bookingsDTO = bookings.Select(b => new
+        {
+            b.Id,
+            EventTitle = b.Event.Title,
+            b.CreatedAt
+        });
+
+        return Ok(bookingsDTO);
     }
 
     [Authorize(Roles = "Admin")]
@@ -78,14 +103,21 @@ public class BookingController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var bookings = await _context.Bookings
-                            .Include(b => b.Event)
-                            .Include(b => b.User)
-                            .ToListAsync();
+            .Include(b => b.Event)
+            .Include(b => b.User)
+            .ToListAsync();
 
-        return Ok(bookings);
+        var bookingsDTO = bookings.Select(b => new
+        {
+            b.Id,
+            EventTitle = b.Event.Title,
+            UserName = b.User.Username,
+            b.CreatedAt
+        });
+
+        return Ok(bookingsDTO);
     }
 
-    //Admin: Update booking time or event
     [Authorize(Roles = "Admin")]
     [HttpPut("{bookingId}")]
     public async Task<IActionResult> UpdateBooking(int bookingId, [FromBody] Booking updated)
@@ -98,10 +130,10 @@ public class BookingController : ControllerBase
         booking.CreatedAt = updated.CreatedAt;
 
         await _context.SaveChangesAsync();
+
         return Ok("Booking updated.");
     }
 
-    //  Admin: Delete any booking
     [Authorize(Roles = "Admin")]
     [HttpDelete("admin-delete/{id}")]
     public async Task<IActionResult> DeleteByAdmin(int id)
@@ -112,7 +144,7 @@ public class BookingController : ControllerBase
 
         _context.Bookings.Remove(booking);
         await _context.SaveChangesAsync();
+
         return Ok("Booking deleted by Admin.");
     }
-
 }

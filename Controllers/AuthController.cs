@@ -22,7 +22,11 @@ public class AuthController : ControllerBase
         _jwtService = jwtService;
         _passwordHasher = passwordHasher;
     }
-
+    /// <summary>
+    ///  plain text param ( query string, request body, etc. )
+    /// </summary>
+    /// <param name="request">DTO == Data Transfer Object </param> Security (hide unimportant, senstive )
+    /// <returns></returns>
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] API.DTOs.RegisterRequest request)
     {

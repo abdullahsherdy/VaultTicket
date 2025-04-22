@@ -35,10 +35,12 @@ namespace API
 
             // Register DI services
             builder.Services.AddScoped<IRandomNumberGeneratorService, RandomNumberGeneratorService>();
+            builder.Services.AddScoped<ITicketService, TicketService>();
             builder.Services.AddScoped<JwtService>();
             builder.Services.AddScoped<PasswordHasher>();
-            builder.Services.AddScoped<AesEncryptionService>();
             builder.Services.AddScoped<TokenService>();
+            builder.Services.AddSingleton<AESEncryptionService>();
+
 
             // JWT Config
             var jwtKey = builder.Configuration["Jwt:Key"];
